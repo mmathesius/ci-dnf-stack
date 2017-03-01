@@ -10,6 +10,8 @@ from six.moves import zip
 import rpm_utils
 import table_utils
 
+from dnf.base import Base
+
 HEADINGS_RPMDB = ["State", "Packages"]
 
 @when("I save rpmdb")
@@ -80,6 +82,11 @@ def step_rpmdb_changes_are(ctx):
     ctx.wipe_rpmdb = True
     rpmdb = rpm_utils.get_rpmdb()
     problems = []
+    # read installonly pkg names
+    base = Base()
+    base.fill_sack(load_available_repos=False)
+    query = base.sack.query()
+    installonly_pkgs = [pkg.name for pkg in query.installed().filter(provides__glob=base.conf.installonlypkgs).run()]
 
     def unexpected_state(pkg, state, expected_state, pkg_pre, pkg_post):
         problems.append("Package {pkg!r} was supposed to be "
@@ -97,6 +104,8 @@ def step_rpmdb_changes_are(ctx):
     for expected_state, packages in table.items():
         for pkg in pkgs_split(packages):
             pkg_pre = rpm_utils.find_pkg(ctx.rpmdb, pkg, only_by_name=True)
+            if pkg_pre and pkg_pre["name"] in installonly_pkgs:
+                pkg_pre = rpm_utils.find_pkg(ctx.rpmdb, pkg, only_by_name=False)
             if pkg_pre:
                 ctx.rpmdb.remove(pkg_pre)
             pkg_post = rpm_utils.find_pkg(rpmdb, pkg)
