@@ -14,7 +14,7 @@ def sack_rpm_comparator():
     """ Gets all installed packages in the system, compare rpm output with DNF sack, and return sack"""
     comparerpmver = shell_call(['rpm', '-qa', '--queryformat',
                                 '%{NAME}-%|epoch?{%{epoch}:}:{0:}|%{VERSION}-%{RELEASE}.%{ARCH}\n'])
-    comparerpmver = [p for p in comparerpmver.splitlines() if not p.decode().startswith('gpg-pubkey')]
+    comparerpmver = [p for p in comparerpmver.splitlines() if not p.startswith('gpg-pubkey')]
     set_comparerpmver = set(comparerpmver)
     assert len(comparerpmver) == len(set_comparerpmver), 'RPM found multiple packages with same nevra'
     sack = dnf.Base().fill_sack(load_available_repos=False)
@@ -250,10 +250,10 @@ def then_the_section(context, section, pkgs):
     pkgs = splitter(pkgs)
     lines = iter(context.cmd_output.split('\n'))
     try:
-        while not re.match('^{}:'.format(section), lines.next()):
+        while not re.match('^{}:'.format(section), next(lines)):
             pass
         while True:
-            pkg_line = lines.next()
+            pkg_line = next(lines)
             if not pkg_line.startswith(' '):
                 raise AssertionError('packages {} has not been found in {} section'.format(pkgs, section))
             pkg_name = pkg_line.split()[0]
