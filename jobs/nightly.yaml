@@ -17,7 +17,7 @@
       - workspace-cleanup
 
 - project:
-    name: nightly
+    name: dnf-nightly
     jobs:
       - "{name}-{chroot}"
     overlay_dir: dnf-master
@@ -27,10 +27,11 @@
          overlay_dir: dnf-master-epel7
       - fedora-26-x86_64
       - fedora-27-x86_64
+      - fedora-28-x86_64
       - fedora-rawhide-x86_64
 
 - project:
-    name: nightly-modular
+    name: dnf-nightly-modular
     jobs:
       - "{name}-{chroot}"
     overlay_dir: dnf-modular

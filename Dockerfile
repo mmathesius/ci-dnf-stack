@@ -1,4 +1,4 @@
-FROM fedora:26
+FROM fedora:27
 ENV LANG C
 ARG type=local
 
@@ -31,8 +31,8 @@ RUN set -x && \
         dnf -y install dnf-plugins-core python3-dnf-plugins-core python2-dnf-plugins-core createrepo_c && \
         dnf -y copr enable mhatina/dnf-modularity-nightly; \
     fi && \
-    # prevent installation of dnf-plugins-extras (versionlock, local, torproxy)
-    rm -vf /rpms/*dnf-plugin-versionlock*.rpm /rpms/*dnf-plugin-local*.rpm /rpms/*dnf-plugin-torproxy*.rpm && \
+    # prevent installation of dnf-plugins-extras (versionlock, local, torproxy, migrate)
+    rm -vf /rpms/*dnf-plugin-versionlock*.rpm /rpms/*dnf-plugin-local*.rpm /rpms/*dnf-plugin-torproxy*.rpm /rpms/python2-dnf-plugin-migrate*.rpm && \
     # update dnf
     dnf -y --best upgrade dnf libdnf --exclude=libdnf-0.12.2 --enablerepo=updates-testing && \
     if [ $type = "local" ]; then \
@@ -65,6 +65,8 @@ RUN set -x && \
     sed -i 's:^SSLCertificateFile .*:SSLCertificateFile /etc/pki/tls/certs/testcerts/server/cert.pem:' /etc/httpd/conf.d/ssl.conf && \
     sed -i 's:^SSLCertificateKeyFile .*:SSLCertificateKeyFile /etc/pki/tls/certs/testcerts/server/key.pem:' /etc/httpd/conf.d/ssl.conf && \
     sed -i 's:.*SSLCACertificateFile .*:SSLCACertificateFile /etc/pki/tls/certs/testcerts/ca/cert.pem:' /etc/httpd/conf.d/ssl.conf && \
+    # configure ftpd
+    sed -i 's/anonymous_enable=.*/anonymous_enable=YES/' /etc/vsftpd/vsftpd.conf && \
     dnf -y clean all && \
     mkdir /tmp/repos.d && mv /etc/yum.repos.d/* /tmp/repos.d/ && \
     mkdir /repo && \

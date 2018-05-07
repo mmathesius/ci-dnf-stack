@@ -16,8 +16,6 @@ components:
   - name: librepo
     git:
       src: github:rpm-software-management/librepo.git
-    distgit:
-      src: fedorapkgs:librepo.git
 
   - name: createrepo_c
     git:

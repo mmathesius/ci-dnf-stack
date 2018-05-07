@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from behave import given
 from behave import then
+from behave import step
 from behave.model import Table
 import six
 from six.moves import configparser
@@ -41,6 +42,14 @@ def step_a_file_filepath_with(ctx, filepath):
     """
     ctx.assertion.assertIsNotNone(ctx.text, "Multiline text is not provided")
     file_utils.create_file_with_contents(filepath, ctx.text)
+
+@step('a file "{filepath}" exists')
+def step_a_file_filepath_exists(ctx, filepath):
+    ctx.assertion.assertTrue(os.path.exists(filepath))
+
+@step('a file "{filepath}" does not exist')
+def step_a_file_filepath_does_not_exist(ctx, filepath):
+    ctx.assertion.assertFalse(os.path.exists(filepath))
 
 @given('an INI file "{filepath}" with')
 def step_an_ini_file_filepath_with(ctx, filepath):
@@ -118,7 +127,7 @@ def step_an_ini_file_filepath_modified_with(ctx, filepath):
        of the respective record.
     """
     updates = table_utils.parse_skv_table(ctx, HEADINGS_INI)
-    sections = updates.keys()
+    sections = list(updates.keys())  # convert to list as py3 returns an iterator
     sections.sort()  # sort so we have removal first
     conf = configparser.ConfigParser()
     conf.read(filepath)

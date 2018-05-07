@@ -200,7 +200,16 @@ Provides:       {{ prv }}
 %description
 %{summary}.
 
+%prep
+touch %{name}-%{version}-%{release}.tmp .
+
+%install
+mkdir -p %{buildroot}/usr/local/%{name}
+mv %{name}-%{version}-%{release}.tmp %{buildroot}/usr/local/%{name}/
+
 %files
+/usr/local/%{name}/
+/usr/local/%{name}/%{name}-%{version}-%{release}.tmp
 """
 REPO_TMPL = "/etc/yum.repos.d/{!s}.repo"
 HEADINGS_REPO = ["Package", "Tag", "Value"]
@@ -371,7 +380,7 @@ def given_repository_with_packages(ctx, enabled, rtype, repository, gpgkey=None)
     else:
         tmpdir = tempfile.mkdtemp()
         repopath = tmpdir
-    srpm_tmpdir = '{}-source'.format(tmpdir.strip('/'))
+    srpm_tmpdir = '{}-source'.format(tmpdir.rstrip('/'))
     srpm_repopath = '{}-source'.format(repopath.rstrip('/'))
     os.mkdir(srpm_tmpdir)  # create a directory for src.rpm pkgs
     template = JINJA_ENV.from_string(PKG_TMPL)
@@ -686,6 +695,7 @@ def given_package_groups_defined_in_repository(ctx, repository):
 
     createrepo = which("createrepo_c")
     ctx.assertion.assertIsNotNone(createrepo, "createrepo_c is required")
+    createrepo = "{!s} {!s}".format(createrepo, "--no-database")
 
     # prepare the comps.xml
     comps_xml = COMPS_PREFIX
