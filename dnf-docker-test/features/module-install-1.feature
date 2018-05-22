@@ -101,25 +101,3 @@ Feature: Installing module profiles
             Nothing to install. Enabled modules: ModuleA:f26.
             """
 
-  Scenario: I can install a module default profile with dependencies for an enabled module stream
-      Given I successfully run "dnf module enable ModuleE:f26"
-       When I save rpmdb
-        And I successfully run "dnf module install -y ModuleE"
-       Then a module "ModuleD" config file should contain
-         | Key      | Value |
-         | enabled  | 1     |
-         | stream   | f26   |
-         # version  | 1     | # note: skip version check since module is only enabled, not installed
-        And a module "ModuleE" config file should contain
-         | Key      | Value |
-         | enabled  | 1     |
-         | stream   | f26   |
-         | version  | 1     |
-        And rpmdb changes are
-         | State     | Packages                       |
-         | installed | TestP/1-1.modE, TestM/1-1.modD |
-
-  Scenario: A proper error message is displayed when I try to install a non-existant module using group syntax
-       When I run "dnf install @ModuleC"
-       Then the command exit code is 1
-        And the command stderr should match regexp "Module or Group 'ModuleC' does not exist"
