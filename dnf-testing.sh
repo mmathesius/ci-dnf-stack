@@ -57,13 +57,14 @@ EOF
     exit 0
 }
 
-TEMP=$(getopt -n $0 -o hdrRc: -l help,devel,reserve,reserveonfail,container: -- "$@") || show_usage
+TEMP=$(getopt -n $0 -o hdrRc: -l help,devel,reserve,reserveonfail,noxfail,container:,tags: -- "$@") || show_usage
 eval set -- "$TEMP"
 
 devel=""
 IMAGE="dnf-bot/dnf-testing:latest"
 PARAM_RESERVE=""
 PARAM_TTY=""
+PARAM_TAGS=""
 
 while :; do
     case "$1" in
@@ -73,6 +74,8 @@ while :; do
         -c|--container) IMAGE=$2; shift 2;;
         -r|--reserve) set_reserve; shift;;
         -R|--reserveonfail) set_reserveR; shift;;
+        -t|--tags) PARAM_TAGS="$PARAM_TAGS --tags $2"; shift 2;;
+        --noxfail) PARAM_TAGS="$PARAM_TAGS --tags ~@xfail"; shift;;
         *) fatal "Non-implemented option: $1"
     esac
 done
@@ -162,8 +165,8 @@ run()
         for feature in "${TESTS[@]}"; do
             feature=${feature%.feature}  # cut-off .feature suffix if present
             for command in dnf-3; do
-                printf "\nsudo docker run $PARAM_TTY --rm "$IMAGE" launch-test $PARAM_RESERVE "$feature" $command\n"
-                sudo docker run $PARAM_TTY --rm "$IMAGE" launch-test $PARAM_RESERVE "$feature" $command >&2 || \
+                printf "\nsudo docker run $PARAM_TTY --rm "$IMAGE" launch-test $PARAM_RESERVE $PARAM_TAGS "$feature" $command\n"
+                sudo docker run $PARAM_TTY --rm "$IMAGE" launch-test $PARAM_RESERVE $PARAM_TAGS "$feature" $command >&2 || \
                 if [ $? -ne 0 ]; then let ++failed && failed_test_name+=" $feature-$command"; fi
             done
         done
@@ -171,8 +174,8 @@ run()
         for feature in "${TESTS[@]}"; do
             feature=${feature%.feature}  # cut-off .feature suffix if present
             for command in dnf-3; do
-                printf "\nsudo docker run $PARAM_TTY --rm -v "$devel" "$IMAGE" launch-test $PARAM_RESERVE "$feature" $command\n"
-                sudo docker run $PARAM_TTY --rm -v "$devel" -v "$devel_steps" "$IMAGE" launch-test $PARAM_RESERVE "$feature" $command >&2 || \
+                printf "\nsudo docker run $PARAM_TTY --rm -v "$devel" "$IMAGE" launch-test $PARAM_RESERVE $PARAM_TAGS "$feature" $command\n"
+                sudo docker run $PARAM_TTY --rm -v "$devel" -v "$devel_steps" "$IMAGE" launch-test $PARAM_RESERVE $PARAM_TAGS "$feature" $command >&2 || \
                 if [ $? -ne 0 ]; then let ++failed && failed_test_name+=" $feature-$command"; fi
             done
         done
