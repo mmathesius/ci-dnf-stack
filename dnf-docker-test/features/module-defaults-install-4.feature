@@ -54,7 +54,7 @@ Feature: On-disk modulemd data are merged with repodata
         And I successfully run "dnf -y module disable ModuleConfPD2:pepper"
 
   @xfail
-  # awaiting confirmation of proper understanding of merging defaults
+  # https://bugzilla.redhat.com/show_bug.cgi?id=1582524
   Scenario: Local system modulemd defaults are merged and override repo defaults
        When I save rpmdb
         And I successfully run "dnf -y module install ModuleConfPD2:sugar"
