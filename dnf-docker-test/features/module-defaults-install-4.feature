@@ -1,5 +1,13 @@
 Feature: On-disk modulemd data are merged with repodata
 
+# Notes regarding operation of modulemd-defaults data merging:
+# 1. All repodata data for each module are merged.
+# 2. All on-disk data for each module are merged.
+# 3. The merged on-disk data and merged repodata data are then merged,
+#    with on-disk data for any module overriding the repodata data.
+#    This means on-disk data can add to or change stream profiles
+#    found in repodata, but never delete stream profiles.
+
   @setup
   Scenario: Testing repository Setup
       Given I run steps from file "modularity-repo-5.setup"
