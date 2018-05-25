@@ -1,11 +1,5 @@
 Feature: On-disk modulemd data are merged with repodata
 
-# Notes:
-# 1. on-disk modulemd-defaults data for a given module completely overrides
-#     repodata for that module
-# 2. multiple on-disk modulemd-defaults data for a given module will be merged,
-#    but that simply means additional streams can be added
-#
   @setup
   Scenario: Testing repository Setup
       Given repository "modularityConf" with packages
